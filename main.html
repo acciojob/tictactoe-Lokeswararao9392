@@ -1,16 +1,192 @@
 <!DOCTYPE html>
-
-<html>
-
+<html lang="en">
 <head>
-	<link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tic-tac-toe-game</title>
+    <style>
+        body{
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .hide{
+            display: none;
+        }
+        .game-board{
+            height: 400px;
+            width: 400px;
+            border:1px solid black;
+            display: grid;
+            grid-template-columns: repeat(3,1fr);
+            grid-template-rows: repeat(3,1fr);
+        }
+        .box{
+            border: 1px solid black;
+            background-color: rgb(240, 172, 183);
+            font-size: xx-large;
+            text-align: center;
+            align-content: center;
+            transition: background 1s ease 1s;
+        }
+    </style>
 </head>
-
 <body>
-	<!-- the entire body must be written by student -->
-    <script type="text/javascript" src="./script.js">
-</script>
+    <form id = "player-form">
+        <label for="player-1">player 1</label>
+        <input type = "text" id = "player-1">
+        <label for="player-2">player 2</label>
+        <input type = "text" id = "player-2">
+        <input type = "submit" value = "sumbit">
+    </form>
+      <div class = "hide" id = "game-area">
+        <h1 id = "player-turn-info"></h1>
+    <div class = "game-board hide" id = "game-board">
+    </div>
+    </div>
+    <script>
+        const form = document.getElementById("player-form")
+        const gameBoard = document.getElementById("game-board")
+    
+         let isPlayerOneTurn = true
+         const playerTurnInfo = document.getElementById("player-turn-info")
+         const gameArea = document.getElementById("game-area")
 
+         const playerOneSelections = []
+         const playerTwoSelections = []
+
+         const winningCombinations = [
+            //Row
+            ["R1-C1","R1-C2","R1-C3"],
+            ["R2-C1","R2-C2","R2-C3"],
+            ["R3-C1","R3-C2","R3-C3"],
+            //Column
+            ["R1-C1","R2-C1","R3-C1"],
+            ["R1-C2","R2-C2","R3-C2"],
+            ["R1-C3","R2-C3","R3-C3"],
+            //Diagonal
+            ["R1-C1","R2-C2","R3-C3"],
+            ["R1-C3","R2-C2","R3-C1"]
+         ]
+
+        form.addEventListener("submit",storePlayerDetails)
+
+        //create a function store players details
+        function storePlayerDetails(e){
+          e.preventDefault()
+            const form = e.target
+            const player1 = e.target[0].value;
+            const player2 = e.target[1].value; 
+
+           localStorage.setItem("player1",player1)
+           localStorage.setItem("player2",player2)
+            //  console.log(e,form,player1,player2,"event form")
+
+            form.classList.toggle("hide")
+            gameArea.classList.toggle("hide")
+
+            playerTurnInfo.innerText = `its ${player1}'s Turn!!!`
+        }
+
+        // create rows and coloumn boxes in grid
+        function createBoxes(id){
+           const box = document.createElement("div")
+           box.classList.add("box")
+          // box.innerText = index
+           box.id = id
+           box.addEventListener("click",playerTurn)
+
+           gameBoard.appendChild(box)
+        }
+        let row = 1;
+        let coloumn = 1;
+        for(let i=1;i<=9;i++){
+            const id = `R${row}-C${coloumn}`
+            if(i%3===0){
+                row++;
+                coloumn = 0;
+            }
+        
+           createBoxes(id)
+           coloumn++;
+        }
+
+        // player turn
+        function playerTurn(e){
+          console.log("clicked on box",e.target.id)
+
+         e.target.style.backgroundColor = `rgb(238, 199, 206)`
+
+          if(isPlayerOneTurn){
+            e.target.innerText = "X"
+            isPlayerOneTurn = false
+            playerTurnInfo.innerText = `its ${localStorage.getItem("player2")}'s Turn!!!`
+            playerOneSelections.push(e.target.id)
+          }else{
+            e.target.innerText = "O"
+            isPlayerOneTurn = true
+            playerTurnInfo.innerText = `its ${localStorage.getItem("player1")}'s Turn!!!`
+            playerTwoSelections.push(e.target.id)
+          }
+          if(playerOneSelections.length >=3 || playerTwoSelections.length >=3){
+            findWinner()
+          }
+        // console.log(playerOneSelections,playerOneSelections)
+        }
+
+        //Identify the winner
+        function findWinner(){
+          console.log("trying find winner")
+
+          // find if player1 is winner
+        if(playerOneSelections.length >= 3){
+          for(let combo of winningCombinations){
+            //combo is something like this  ["R1-C1","R1-C2","R1-C3"],
+            let count = 0;
+            for(let i=0;i<combo.length;i++){
+                // combo[i] - "R1-C1"
+              if(playerOneSelections.includes(combo[i])){
+                count++;
+              }
+            }
+            if(count === 3){
+
+              playerTurnInfo.innerText = `${localStorage.getItem("player1")} is winner !!!`
+              return
+             // setTimeout(()=>{
+            //  alert(localStorage.getItem("player1")+("is Winner"))
+            //  return
+            //  },500)
+            }
+          }
+        }
+          // find if player2 is winner
+          if(playerTwoSelections.length >= 3){
+          for(let combo of winningCombinations){
+            //combo is something like this  ["R1-C1","R1-C2","R1-C3"],
+            let count = 0;
+            for(let i=0;i<combo.length;i++){
+                // combo[i] - "R1-C1"
+              if(playerTwoSelections.includes(combo[i])){
+                count++;
+              }
+            }
+            if(count === 3){
+
+              playerTurnInfo.innerText = `${localStorage.getItem("player2")} is winner !!!`
+              return 
+             // setTimeout(()=>{
+            //  alert(localStorage.getItem("player1")+("is Winner"))
+            //  return
+            //  },500)
+            }
+          }
+        }
+    }
+    </script>
 </body>
-
 </html>
